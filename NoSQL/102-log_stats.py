@@ -6,11 +6,20 @@ METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 
 def main():
+    """
+    Prints statistics about Nginx logs stored in MongoDB.
+
+    - Displays total number of logs
+    - Shows HTTP methods count
+    - Shows number of GET /status checks
+    - Displays top 10 most frequent IPs
+    """
     client = MongoClient("mongodb://127.0.0.1:27017")
     col = client.logs.nginx
 
     total = col.count_documents({})
     print(f"{total} logs")
+
     print("Methods:")
     for m in METHODS:
         count = col.count_documents({"method": m})
@@ -23,7 +32,7 @@ def main():
     pipeline = [
         {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
         {"$sort": {"count": -1, "_id": 1}},
-        {"$limit": 10},
+        {"$limit": 10}
     ]
     for doc in col.aggregate(pipeline):
         print(f"\t{doc['_id']}: {doc['count']}")
